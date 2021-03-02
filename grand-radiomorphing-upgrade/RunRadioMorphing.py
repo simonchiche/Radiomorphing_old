@@ -31,7 +31,7 @@ def run():
     #grand_radiomorphing.process(sim_dir, shower, antennas, out_dir)
     process(sim_dir, shower, out_dir)
 
-# this is a test
+# this is a test2
 
 if __name__ == "__main__":
     run()
