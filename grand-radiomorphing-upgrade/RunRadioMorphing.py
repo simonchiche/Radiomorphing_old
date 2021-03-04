@@ -14,7 +14,7 @@ def run():
     # folder which will contain radio morphed traces afterwards
     out_dir = glob.glob("./OutputDirectory")
     # list of antenna positions you would like to simulate, stored in out_dir in the best case
-    antennas = glob.glob("./DesiredPositions/AntennasCoordinates.txt") 
+    #antennas = glob.glob("./DesiredPositions/AntennasCoordinates.txt") 
 
 
     # definition of target shower parameters
@@ -23,15 +23,14 @@ def run():
         "energy" : 0.96,               # EeV
         "zenith" : 89.5,               # deg (GRAND frame)
         "azimuth" : 0.,                # deg (GRAND frame)
-        "injection_height" : 2000.,    # m (injection height in the local coordinate system)
-        "altitude" : 2000. }   # m (alitude oj injection with respect to sealevel, 
+        "injection" : 1e5,    # m (injection height in the local coordinate system)
+        "altitude" : 1000. }   # m (alitude oj injection with respect to sealevel, 
                                #not necessarily eqivalent to injection height)
-
     # Perform the radiomorphing
     #grand_radiomorphing.process(sim_dir, shower, antennas, out_dir)
     process(sim_dir, shower, out_dir)
 
-# this is a test2
+
 
 if __name__ == "__main__":
     run()
