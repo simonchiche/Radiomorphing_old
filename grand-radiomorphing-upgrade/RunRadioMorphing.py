@@ -20,9 +20,9 @@ def run():
     # definition of target shower parameters
     shower = {
         "primary" : "electron",        # primary (electron, pion)
-        "energy" : 0.96,               # EeV
-        "zenith" : 89.5,               # deg (GRAND frame)
-        "azimuth" : 0.,                # deg (GRAND frame)
+        "energy" : 3.9811,               # EeV
+        "zenith" : 65.1,               # deg (GRAND frame)
+        "azimuth" : 180.,                # deg (GRAND frame)
         "injection" : 1e5,    # m (injection height in the local coordinate system)
         "altitude" : 1000. }   # m (alitude oj injection with respect to sealevel, 
                                #not necessarily eqivalent to injection height)
