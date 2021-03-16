@@ -11,7 +11,7 @@ import hdf5fileinout as hdf5io
 from scaling import myscale
 import sys
 import copy
-
+from TestRadiomorphing import p2pcheck
 
 def process(sim_dir, shower,  out_dir):
     """Rescale and interpolate the radio traces for all antennas 
@@ -38,22 +38,18 @@ def process(sim_dir, shower,  out_dir):
         
         RefShower = extractData(sim_dir[i])
         
-        #TargetShower = Shower(shower['primary'], shower['energy'], shower['zenith'], \
-        #shower['azimuth'], shower['injection'], RefShower.nant, RefShower.inclination,\
-        #shower['altitude'], RefShower.pos, RefShower.traces , \
-        #RefShower.dplane, RefShower.xmaxdist, RefShower.xmaxpos)
-        
-        TargetShower = copy.deepcopy(RefShower) # TODO: check with Olivier and Kumiko
+        TargetShower = copy.deepcopy(RefShower) 
         TargetShower.primary = shower['primary']
         TargetShower.energy = shower['energy']
         TargetShower.zenith = shower['zenith']
         TargetShower.azimuth = shower['azimuth']
         TargetShower.injection = shower['injection']
-        TargetShower.glevel = shower['altitude']
-        
-        print(RefShower.energy, TargetShower.energy)
-        
+        #TargetShower.glevel = shower['altitude']
+                
         myscale(RefShower, TargetShower)
+        
+        SimulatedShower = extractData(sim_dir[i]) # TODO: include this in the test function
+        p2pcheck(TargetShower, SimulatedShower)
 
         # interpolate the traces.
         # interpolate(antennas, sim_dir[i], out_dir,
@@ -113,13 +109,11 @@ class Shower:
         uv = self.showerdirection()
         u_antenna = np.array([x_antenna, y_antenna, z_antenna]) # direction of the unit vectors that goes from Xmax to the position of the antennas
         distplane = np.dot(np.transpose(u_antenna), uv)
-    
-    
+            
         return np.mean(distplane)
 
     def get_center(self, distplane = 0):
 
-        distground = self.xmaxdist
         xmaxpos = self.xmaxpos
         x_Xmax, y_Xmax, z_Xmax = xmaxpos[0], xmaxpos[1], xmaxpos[2]
         GroundLevel = self.glevel
@@ -131,8 +125,8 @@ class Shower:
         distplane = self.distplane
 
         dist_plane_ground = distground - distplane
-        core = uv*(dist_plane_ground)
-        core[2] = core[2] - GroundLevel
+        core = -uv*(dist_plane_ground)
+        core[2] = core[2] + GroundLevel
     
         return core    
     
@@ -147,12 +141,14 @@ class Shower:
         x, y, z = pos[:,0], pos[:,1], pos[:,2]
         n = len(x) # number of antennas
         
-        # We move the core position in (0,0,0) before changing the reference frame
+        # We move the core position in (0,0,0) before changing the 
+        #reference frame
+        
         core = self.get_center()
         
-        x = x + core[0]
-        y = y + core[1] 
-        z = z + core[2]
+        x = x - core[0]
+        y = y - core[1] 
+        z = z - core[2]
         
         Traces = self.traces
         time_sample = len(Traces[:,0])
@@ -212,7 +208,7 @@ class Shower:
         Traces_sp = np.transpose(np.concatenate((np.transpose(Time), \
         np.transpose(Traces_Ev), np.transpose(Traces_Evxb), np.transpose(Traces_Evxvxb))))
     
-        Positions_sp = np.zeros([n,3]) # To check
+        Positions_sp = np.zeros([n,3]) 
         Positions_sp[:,0], Positions_sp[:,1], Positions_sp[:,2] = v, vxb, vxvxb
     
         return Positions_sp, Traces_sp
@@ -245,8 +241,8 @@ class Shower:
         xmaxpos = self.xmaxpos
         pos = self.pos
         x_Xmax, y_Xmax, z_Xmax =  xmaxpos[0], xmaxpos[1], xmaxpos[2]
-        x, y, z = pos[:,0], pos[:,1], pos[:,2] 
-    
+        x, y, z = pos[:,0], pos[:,1], pos[:,2]
+        
         inclination = inclination*np.pi/180.0
         
         x_antenna = x - x_Xmax # distance along the x-axis between the antennas postions and Xmax
@@ -358,7 +354,7 @@ class Shower:
         zen = self.zenith
         GdAlt = self.glevel
         injh = self.injection
-        
+                
         Re= 6370949 # m, Earth radius
     
         a = np.sqrt((Re + injh)**2. - (Re+GdAlt)**2 *np.sin(np.pi-np.deg2rad(zen))**2) - (Re+GdAlt)*np.cos(np.pi-np.deg2rad(zen))
@@ -417,7 +413,9 @@ class Shower:
     
     def getGroundXmaxDistance(self):
         
-        zenith = self.zenith*np.pi/180
+        # zenith in cosmic ray convention here
+        
+        zenith = (180 -self.zenith)*np.pi/180
         GroundAltitude = self.glevel
         XmaxHeight, DistDecayXmax = self._dist_decay_Xmax()
     
@@ -425,7 +423,7 @@ class Shower:
         
         dist = np.sqrt((Rearth+ XmaxHeight)**2 - ((Rearth + GroundAltitude)*np.sin(zenith))**2) \
         - (Rearth + GroundAltitude)*np.cos(zenith)
-        
+                
         return dist   
     
     def getXmaxPosition(self):
@@ -434,7 +432,7 @@ class Shower:
         
         showerDistance = self.getGroundXmaxDistance()
         
-        XmaxPosition = uv*showerDistance 
+        XmaxPosition = -uv*showerDistance 
         XmaxPosition[2] = XmaxPosition[2] +1000  
         
         return XmaxPosition
@@ -450,6 +448,7 @@ class Shower:
           core = self.get_center()
           xant, yant, zant = core[0], core[1], core[2]
           x0, y0, z0 = XmaxPosition[0], XmaxPosition[1], XmaxPosition[2]
+          print(z0)
           #rearth=6371007.0 #new aires
           rearth=6370949.0 #19.4.0
     #     Variable n integral calculation ///////////////////
@@ -522,7 +521,6 @@ class Shower:
     def get_cerenkov_angle(self):
         
         n_refraction = self.GetZHSEffectiveactionIndex()
-        print(n_refraction)
         cer_ang = np.rad2deg(np.arccos(1/n_refraction))
         
         return cer_ang
@@ -603,9 +601,9 @@ class Shower:
         
         core = self.get_center()
         
-        x = x - core[0]
-        y = y - core[1] 
-        z = z - core[2]
+        x = x + core[0]
+        y = y + core[1] 
+        z = z + core[2]
     
         Positions_ground = np.zeros([n,3]) # To check
         Positions_ground[:,0], Positions_ground[:,1], Positions_ground[:,2] = x, y, z
