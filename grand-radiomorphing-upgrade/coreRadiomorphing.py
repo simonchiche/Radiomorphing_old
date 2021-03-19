@@ -11,7 +11,7 @@ import hdf5fileinout as hdf5io
 from scaling import myscale
 import sys
 import copy
-from TestRadiomorphing import p2pcheck
+from TestRadiomorphing import LDFcheck
 
 def process(sim_dir, shower,  out_dir):
     """Rescale and interpolate the radio traces for all antennas 
@@ -49,7 +49,7 @@ def process(sim_dir, shower,  out_dir):
         myscale(RefShower, TargetShower)
         
         SimulatedShower = extractData(sim_dir[i]) # TODO: include this in the test function
-        p2pcheck(TargetShower, SimulatedShower)
+        LDFcheck(TargetShower, SimulatedShower)
 
         # interpolate the traces.
         # interpolate(antennas, sim_dir[i], out_dir,
@@ -127,7 +127,7 @@ class Shower:
         dist_plane_ground = distground - distplane
         core = -uv*(dist_plane_ground)
         core[2] = core[2] + GroundLevel
-    
+            
         return core    
     
     def GetinShowerPlane(self):
@@ -320,7 +320,7 @@ class Shower:
         primary = self.primary
         energy= self.energy
         
-        if(primary == 'electron'):
+        if(primary == 'Iron'):
             a =65 
             c =270
             return a*np.log10(energy*1e6) +c
@@ -433,7 +433,7 @@ class Shower:
         showerDistance = self.getGroundXmaxDistance()
         
         XmaxPosition = -uv*showerDistance 
-        XmaxPosition[2] = XmaxPosition[2] +1000  
+        XmaxPosition[2] = XmaxPosition[2] + self.glevel  
         
         return XmaxPosition
     
@@ -448,7 +448,6 @@ class Shower:
           core = self.get_center()
           xant, yant, zant = core[0], core[1], core[2]
           x0, y0, z0 = XmaxPosition[0], XmaxPosition[1], XmaxPosition[2]
-          print(z0)
           #rearth=6371007.0 #new aires
           rearth=6370949.0 #19.4.0
     #     Variable n integral calculation ///////////////////
@@ -615,6 +614,7 @@ class Shower:
 def extractData(sim_file):
     
     simu_path = './' + sim_file
+    print(sim_file)
     InputFilename = simu_path
     filehandle = h5py.File(InputFilename, 'r')
 
@@ -677,7 +677,7 @@ def extractData(sim_file):
               
     Nant = len(X)
     Injection = 1e5 # TODO: get it from the hdf5
-    
+        
     
     RefShower = Shower(Primary, Energy, Zenith, Azimuth, Injection, Nant, BFieldIncl, GroundAltitude,
                         Positions, Traces, XmaxDistance, XmaxPosition[0])

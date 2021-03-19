@@ -48,7 +48,7 @@ def GeomagneticScale(RefShower, TargetShower):
     ref_zenith = RefShower.zenith
     
     
-    LimitZenith = 105
+    LimitZenith = 100
         
     if(ref_zenith>LimitZenith): # TODO: refine this condition, rather a condition over theta
     
@@ -66,8 +66,8 @@ def GeomagneticScale(RefShower, TargetShower):
         for j in range(len(w)):
             if(abs(vxb[j])<1):
                 w_kxkxb.append(w[j])
-                Ece.append(Evxvxb[:,j])
-                Egeo.append(Evxb[:,j])
+                Ece.append(abs(Evxvxb[:,j]))
+                Egeo.append(abs(Evxb[:,j]))
           
         Evxb_scaled = np.zeros(np.shape(Evxb))
         
@@ -75,8 +75,8 @@ def GeomagneticScale(RefShower, TargetShower):
             
             diff = abs(w_kxkxb - w[i])
             minimum = np.argmin(diff)
-            Evxb_scaled[:,i] = Egeo[minimum]*kgeo + Ece[minimum]*cos_eta[i]
-        
+            Evxb_scaled[:,i] = -(Egeo[minimum]*kgeo + Ece[minimum]*cos_eta[i])
+            
     else: 
         Evxb_scaled = TargetShower.traces[:,2*Nant:3*Nant]*kgeo
     
@@ -105,6 +105,7 @@ def DensityScale(RefShower, TargetShower):
     scaled_traces = TargetShower.traces[:,2*Nant:3*Nant]*krho
             
     return scaled_traces, xmax_target, krho
+    #return xmax_target
     
 # =============================================================================
 #                       Cerenkov Stretch   
@@ -117,7 +118,7 @@ def CerenkovStretch(RefShower, TargetShower):
     
     kstretch = cerangle_ref/cerangle_target
     w = RefShower.get_w()/kstretch
-    
+        
     v, vxb, vxvxb =  TargetShower.pos[:,0], TargetShower.pos[:,1], TargetShower.pos[:,2]
     eta = np.arctan2(vxvxb, vxb)
     Distplane = TargetShower.distplane  
@@ -125,7 +126,7 @@ def CerenkovStretch(RefShower, TargetShower):
     
     vxb_scaled = d*np.cos(eta) 
     vxvxb_scaled = d*np.sin(eta)
-
+    
     scaled_pos = np.array([v,vxb_scaled, vxvxb_scaled]).T
     scaled_traces = TargetShower.traces[:,176:]*kstretch
         
