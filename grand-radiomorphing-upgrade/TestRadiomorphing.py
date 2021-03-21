@@ -20,7 +20,7 @@ font = {'family' : 'DejaVu Sans',
 
 plt.rc('font', **font)
 
-def LDFcheck(TargetShower, SimulatedShower):
+def Scalingcheck(TargetShower, SimulatedShower):
     
     posSP_sim = SimulatedShower.GetinShowerPlane()[0]
     vxb_sim, vxvxb_sim = posSP_sim[:,1], posSP_sim[:,2]
@@ -93,9 +93,9 @@ def LDFcheck(TargetShower, SimulatedShower):
     plt.ylabel("LDF along $k \\times B$")
     plt.legend(["scaled", "simulated, $\delta I/I = %.3f$" %DeltaI])
     plt.tight_layout()
-    #plt.savefig("LDFvxb_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
-    #%(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
-    #TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))
+    plt.savefig("LDFvxb_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
+    %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
+    TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))
     plt.show()
     
     
@@ -117,9 +117,9 @@ def LDFcheck(TargetShower, SimulatedShower):
     plt.ylabel("LDF along $k \\times k \\times B$")
     plt.legend(["scaled", "simulated, $\delta I/I = %.3f$" %DeltaI])
     plt.tight_layout()
-    #plt.savefig("LDFvxvxb_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
-    #%(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
-    #TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))
+    plt.savefig("LDFvxvxb_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
+    %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
+    TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))
     plt.show()
     
 
@@ -152,22 +152,22 @@ def LDFcheck(TargetShower, SimulatedShower):
             LDFvxvxb_reldiff.append((LDFvxvxb_scaled[minimum] - LDFvxvxb_sim[minimum])/LDFvxvxb_sim[minimum])
             wvxvxb_diff.append(wvxvxb_sim[i])
     
-    plt.scatter(wvxvxb_diff, LDFvxvxb_reldiff)
+    plt.scatter(wvxb_diff, LDFvxb_reldiff)
     plt.xlabel("$\omega$ [Deg.]")
     plt.ylabel("relative deviation $LDF_{k \\times B}$")
     plt.tight_layout()
-    #plt.savefig("LDFvxb_reldiff_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
-    #%(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
-    #TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))    
+    plt.savefig("LDFvxb_reldiff_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
+    %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
+    TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))    
     plt.show()
     
-    plt.scatter(wvxb_diff, LDFvxb_reldiff)
+    plt.scatter(wvxvxb_diff, LDFvxvxb_reldiff)
     plt.xlabel("$\omega$ [Deg.]")
     plt.ylabel("relative deviation $LDF_{k \\times k \\times B}$")
     plt.tight_layout()
-    #plt.savefig("LDFvxvxb_reldiff_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
-    #%(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
-    #TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))    
+    plt.savefig("LDFvxvxb_reldiff_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
+    %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
+    TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))    
     plt.show()
     
 # =============================================================================
@@ -241,9 +241,9 @@ def LDFcheck(TargetShower, SimulatedShower):
     plt.ylabel("relative deviation $E_{tot}$")
     plt.legend(["$\delta I/I = %.3f$" %DeltaI])
     plt.tight_layout()
-    #plt.savefig("Etot_reldiff_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
-    #%(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
-    #TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))    
+    plt.savefig("Etot_reldiff_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
+    %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
+    TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))    
     plt.show()
     
     

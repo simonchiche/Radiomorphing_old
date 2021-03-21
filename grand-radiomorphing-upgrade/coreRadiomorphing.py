@@ -9,9 +9,10 @@ import h5py
 import numpy as np
 import hdf5fileinout as hdf5io
 from scaling import myscale
+from interpolation import do_interpolation_hdf5
 import sys
 import copy
-from TestRadiomorphing import LDFcheck
+from TestRadiomorphing import Scalingcheck
 
 def process(sim_dir, shower,  out_dir):
     """Rescale and interpolate the radio traces for all antennas 
@@ -49,11 +50,12 @@ def process(sim_dir, shower,  out_dir):
         myscale(RefShower, TargetShower)
         
         SimulatedShower = extractData(sim_dir[i]) # TODO: include this in the test function
-        LDFcheck(TargetShower, SimulatedShower)
+        Scalingcheck(TargetShower, SimulatedShower)
 
-        # interpolate the traces.
-        # interpolate(antennas, sim_dir[i], out_dir,
-                #shower["zenith"], shower["azimuth"], shower["injection_height"])
+        do_interpolation_hdf5(TargetShower, VoltageTraces = None, \
+        FilteredVoltageTraces = None, antennamin=0,antennamax=159, \
+        DISPLAY=False, usetrace="efield")  
+         
    
 class Shower:
     
