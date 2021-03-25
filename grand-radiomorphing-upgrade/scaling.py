@@ -5,6 +5,7 @@ Created on Tue Mar  2 15:28:02 2021
 
 @author: chiche
 """
+
 from ModuleScale import EnergyScale, GeomagneticScale, DensityScale, CerenkovStretch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,7 +32,7 @@ def myscale(RefShower, TargetShower):
     
     # Back in the geographic plane
     TargetShower.pos, TargetShower.traces = TargetShower.GetinGeographicFrame()
-    
+        
     # TODO: include magnetic field scaling
                         
     return TargetShower

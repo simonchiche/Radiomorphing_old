@@ -29,7 +29,7 @@ def Scalingcheck(TargetShower, SimulatedShower):
     posSP_target = TargetShower.GetinShowerPlane()[0]
     vxb_target, vxvxb_target = posSP_target[:,1], posSP_target[:,2]
     eta_target  = np.arctan2(vxvxb_target, vxb_target)
-    
+        
     TargetTraces = TargetShower.traces
     SimulatedTraces = SimulatedShower.traces
     n = TargetShower.nant
@@ -91,7 +91,7 @@ def Scalingcheck(TargetShower, SimulatedShower):
     plt.scatter(wvxb_sim, LDFvxb_sim)
     plt.xlabel("$\omega$ [Deg.]")
     plt.ylabel("LDF along $k \\times B$")
-    plt.legend(["scaled", "simulated, $\delta I/I = %.3f$" %DeltaI])
+    plt.legend(["scaled", "simulated, $\delta I/I = %.3f$" %DeltaI], loc = "lower right", fontsize =12)
     plt.tight_layout()
     plt.savefig("LDFvxb_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
     %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
@@ -115,7 +115,7 @@ def Scalingcheck(TargetShower, SimulatedShower):
     plt.scatter(wvxvxb_sim, LDFvxvxb_sim)
     plt.xlabel("$\omega$ [Deg.]")
     plt.ylabel("LDF along $k \\times k \\times B$")
-    plt.legend(["scaled", "simulated, $\delta I/I = %.3f$" %DeltaI])
+    plt.legend(["scaled", "simulated, $\delta I/I = %.3f$" %DeltaI], loc = "lower right", fontsize =12)
     plt.tight_layout()
     plt.savefig("LDFvxvxb_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
     %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
@@ -142,14 +142,14 @@ def Scalingcheck(TargetShower, SimulatedShower):
         
         if(min(diff_vxb)<0.1):
             minimum = np.argmin(diff_vxb)
-            LDFvxb_diff.append(LDFvxb_scaled[minimum] - LDFvxb_sim[minimum])
-            LDFvxb_reldiff.append((LDFvxb_scaled[minimum] - LDFvxb_sim[minimum])/LDFvxb_sim[minimum])
+            LDFvxb_diff.append(LDFvxb_scaled[minimum] - LDFvxb_sim[i])
+            LDFvxb_reldiff.append((LDFvxb_scaled[minimum] - LDFvxb_sim[i])/LDFvxb_sim[i])
             wvxb_diff.append(wvxb_sim[i])
         
         if(min(diff_vxvxb)<0.1):
             minimum = np.argmin(diff_vxvxb)
-            LDFvxvxb_diff.append(LDFvxvxb_scaled[minimum] - LDFvxvxb_sim[minimum])
-            LDFvxvxb_reldiff.append((LDFvxvxb_scaled[minimum] - LDFvxvxb_sim[minimum])/LDFvxvxb_sim[minimum])
+            LDFvxvxb_diff.append(LDFvxvxb_scaled[minimum] - LDFvxvxb_sim[i])
+            LDFvxvxb_reldiff.append((LDFvxvxb_scaled[minimum] - LDFvxvxb_sim[i])/LDFvxvxb_sim[i])
             wvxvxb_diff.append(wvxvxb_sim[i])
     
     plt.scatter(wvxb_diff, LDFvxb_reldiff)
@@ -179,22 +179,23 @@ def Scalingcheck(TargetShower, SimulatedShower):
 
 # TODO : use the antennas position to check i f we are comparing antennas that are close
             
-    w_scaledAll = w_scaled
-    w_simAll =  w_sim
-    #k = np.arange(0,nstarshape,1)
+    w_scaledAll = w_scaled[0:160]
+    w_simAll =  w_sim[0:160]      
     
     Etot_all = []
     w_diff = []
 
     for i in range(len(w_scaledAll)):
-        diff = abs(w_scaledAll - w_simAll[i])
         
-        if((min(diff)<0.1)):
-            minimum = np.argmin(diff)
-            if((eta_sim[i] - eta_target[minimum])<5):
-                Etot_all.append((Etot_scaled[minimum] - Etot_sim[minimum])/Etot_sim[minimum])
+        #minimum = np.argmin(abs(r_sim[i] - r_target))
+        wdiff = abs(w_scaledAll - w_simAll[i])
+        weta = abs(eta_target - eta_sim[i])*180/np.pi
+        for j in range(len(wdiff)):
+            if((weta[j]<5) & (wdiff[j] <0.05)):
+                if(i == 24): print(j)
+                Etot_all.append((Etot_scaled[j] - Etot_sim[i])/Etot_sim[i])
                 w_diff.append(w_simAll[i])
-            
+    
 
 # =============================================================================
 #                          Total integral
@@ -206,14 +207,13 @@ def Scalingcheck(TargetShower, SimulatedShower):
     x,y,z = x- core[0], y - core[1], z - core[2]
     r = np.sqrt(x**2 + y**2 + z**2) 
     
-    arg = np.argsort(r)
-    r = r[arg]
-    Etot_sim = Etot_sim[arg]
+    arg = np.argsort(r[0:160])
+    r = r[0:160][arg]
+    Etot_sim = Etot_sim[0:160][arg]
       
     abscisse = r
-    abscisse = abscisse[0:160]
+    abscisse = abscisse
     y = Etot_sim**2
-    y =y[0:160]
     Integral_sim = scipy.integrate.trapz(y*abs(abscisse), x = abscisse) 
     
     
@@ -225,9 +225,9 @@ def Scalingcheck(TargetShower, SimulatedShower):
     
 
     
-    arg = np.argsort(r2)
-    r2 = r2[arg]
-    Etot_scaled = Etot_scaled[arg]
+    arg = np.argsort(r2[0:160])
+    r2 = r2[0:160][arg]
+    Etot_scaled = Etot_scaled[0:160][arg]
       
     abscisse = r2
     y = Etot_scaled**2
@@ -239,9 +239,20 @@ def Scalingcheck(TargetShower, SimulatedShower):
     plt.scatter(w_diff, Etot_all)
     plt.xlabel("$\omega$ [Deg.]")
     plt.ylabel("relative deviation $E_{tot}$")
-    plt.legend(["$\delta I/I = %.3f$" %DeltaI])
+    plt.legend(["$\delta I/I = %.3f$" %DeltaI], loc = "lower right", fontsize =12)
     plt.tight_layout()
     plt.savefig("Etot_reldiff_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
+    %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
+    TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))    
+    plt.show()
+    
+    
+    plt.scatter(w_scaled[0:160], Etot_scaled[0:160])
+    plt.scatter(w_sim[0:160], Etot_sim[0:160])
+    plt.xlabel("$\omega$ [Deg.]")
+    plt.ylabel("E $[\mu V/m]$")
+    plt.legend(["scaled", "simulated, $\delta I/I = %.3f$" %DeltaI], loc = "lower right", fontsize =12)
+    plt.savefig("Etot_comparison_Ea%.2f_tha%.2f_pha%.2f_Eb%.2f_thb%.2f_phb%.2f.pdf" \
     %(SimulatedShower.energy, SimulatedShower.zenith, SimulatedShower.azimuth, \
     TargetShower.energy, TargetShower.zenith, TargetShower.azimuth))    
     plt.show()

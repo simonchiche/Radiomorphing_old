@@ -10,7 +10,7 @@ def run():
     # reference path
     #data_dir = join(root_dir, "examples", "data")
     # folder containing your refernence shower simulations
-    sim_dir = glob.glob("./Simulations/*")
+    sim_dir = glob.glob("./Simulations/*.hdf5")
     # folder which will contain radio morphed traces afterwards
     out_dir = glob.glob("./OutputDirectory")
     # list of antenna positions you would like to simulate, stored in out_dir in the best case

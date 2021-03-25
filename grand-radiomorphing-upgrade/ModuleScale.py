@@ -100,19 +100,18 @@ def DensityScale(RefShower, TargetShower):
     rho_ref = TargetShower._getAirDensity(XmaxHeight_ref, "linsley")
     rho_target = TargetShower._getAirDensity(XmaxHeight_target, "linsley")
         
-    krho =  np.sqrt(rho_ref/rho_target)
+    krho =  1/np.sqrt(rho_ref/rho_target)
     
     scaled_traces = TargetShower.traces[:,2*Nant:3*Nant]*krho
             
     return scaled_traces, xmax_target, krho
-    #return xmax_target
     
 # =============================================================================
 #                       Cerenkov Stretch   
 # =============================================================================
 
 def CerenkovStretch(RefShower, TargetShower):
-    
+        
     cerangle_ref = RefShower.get_cerenkov_angle()
     cerangle_target = TargetShower.get_cerenkov_angle()
     
@@ -129,7 +128,7 @@ def CerenkovStretch(RefShower, TargetShower):
     
     scaled_pos = np.array([v,vxb_scaled, vxvxb_scaled]).T
     scaled_traces = TargetShower.traces[:,176:]*kstretch
-        
+                
     return scaled_pos, scaled_traces, kstretch
     
 

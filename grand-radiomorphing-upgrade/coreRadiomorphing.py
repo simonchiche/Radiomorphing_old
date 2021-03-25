@@ -13,6 +13,8 @@ from interpolation import do_interpolation_hdf5
 import sys
 import copy
 from TestRadiomorphing import Scalingcheck
+import glob
+from select_plane import select_plane, print_plane
 
 def process(sim_dir, shower,  out_dir):
     """Rescale and interpolate the radio traces for all antennas 
@@ -30,14 +32,16 @@ def process(sim_dir, shower,  out_dir):
             path where the output traces should be dumped
     """
     # Rescale the simulated showers to the requested one
-    # print "ATTENTION scaling commented"
     
     for i in range(len(sim_dir)):
         
-        # TODO: add a function to select the right reference shower 
-        #(and right planes? or do we use all the planes?)
-        
-        RefShower = extractData(sim_dir[i])
+# =============================================================================
+#                         Shower building
+# =============================================================================
+                
+        selected_plane = select_plane(**shower)
+        RefShower = extractData(selected_plane)
+        #RefShower = extractData(sim_dir[i])
         
         TargetShower = copy.deepcopy(RefShower) 
         TargetShower.primary = shower['primary']
@@ -46,16 +50,43 @@ def process(sim_dir, shower,  out_dir):
         TargetShower.azimuth = shower['azimuth']
         TargetShower.injection = shower['injection']
         #TargetShower.glevel = shower['altitude']
-                
-        myscale(RefShower, TargetShower)
+        print_plane(RefShower, TargetShower)
         
-        SimulatedShower = extractData(sim_dir[i]) # TODO: include this in the test function
-        Scalingcheck(TargetShower, SimulatedShower)
+# =============================================================================
+#                              Scaling
+# =============================================================================
+        
+        myscale(RefShower, TargetShower)
 
+# =============================================================================
+#                             LDF check
+# =============================================================================
+       
+        Simulated_path = glob.glob("./TestShowers/*.hdf5")
+        #SimulatedShower = extractData(sim_dir[i]) # TODO: include this in 
+        #the test function # this is for a shower towards itself
+        SimulatedShower = extractData(Simulated_path[i])
+        Scalingcheck(TargetShower, SimulatedShower)
+                
+# =============================================================================
+#                       Interpolation 3d tests
+# =============================================================================
+        
+        #pos = TargetShower.pos# TODO: check !!!!
+        #TargetShower.xmaxpos = SimulatedShower.xmaxpos
+        #TargetShower.traces[:,:176] = SimulatedShower.traces[:,:176]
+        #pos_sim = SimulatedShower.pos
+        #pos[160:,0], pos[160:,1], pos[160:,2] = pos_sim[160:,0], pos_sim[160:,1], pos_sim[160:,2]
+        #TargetShower.pos = pos
+        
+# =============================================================================
+#                           Interpolation      
+# =============================================================================
+       
         do_interpolation_hdf5(TargetShower, VoltageTraces = None, \
         FilteredVoltageTraces = None, antennamin=0,antennamax=159, \
         DISPLAY=False, usetrace="efield")  
-         
+    
    
 class Shower:
     

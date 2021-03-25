@@ -538,6 +538,7 @@ def GetAntennaAnglesSimon(Zenith,Azimuth, xmax_position,positions_sims,positions
     distplane = np.mean(get_distplane(Zenith, Azimuth, x_sims, y_sims, z_sims, xXmax, yXmax, zXmax))
     dist_desired = get_distplane(Zenith, Azimuth, x_des, y_des, z_des, xXmax, yXmax, zXmax)
     distanceratio = [distplane/dist_desired]
+    #print(distanceratio)
 
 # =============================================================================
 #                                Phi angle
@@ -562,12 +563,13 @@ def GetAntennaAnglesSimon(Zenith,Azimuth, xmax_position,positions_sims,positions
 
 #gets as input the positions of the simulated antennas in (antid, phi, alpha) and the position of the desired antena in phi,alpha)
 #returns 4 list of antenna positions, separated in quadrants in (phi,alpha) arround the desired antenna.
-def SelectAntennasForInterpolation(pos_sims_angles,pos_des_angle):
+def SelectAntennasForInterpolation(pos_sims_angles,pos_des_angle, i, discarded):
 
     index_I=[]
     index_II=[]
     index_III=[]
     index_IV=[]
+    
 
     for m in np.arange(0,len(pos_sims_angles)): # desired points as reference
         delta_phi = pos_des_angle[1] - pos_sims_angles[m][1]
@@ -617,6 +619,7 @@ def SelectAntennasForInterpolation(pos_sims_angles,pos_des_angle):
 
     if(bailoutI==1 or bailoutIV==1 or (bailoutII==1 and bailoutIII==0) or (bailoutII==0 and bailoutIII==1)):
       print("Point is outside of the starshape, discarding", )
+      discarded.append(i)
       return -1,-1,-1,-1
 
     if(bailoutII==1 and bailoutIII==1 and bailoutIV==0 and bailoutI==0):
@@ -645,7 +648,8 @@ def SelectAntennasForInterpolation(pos_sims_angles,pos_des_angle):
     Selected_II=index_II[0][0]
     Selected_III=index_III[0][0]
     Selected_IV=index_IV[0][0]
-
+    
+    
     return Selected_I,Selected_II,Selected_III,Selected_IV
 
 
@@ -850,6 +854,9 @@ def ComputeTimeAntennas(TargetShower):
     tmax = np.mean(tmax_all)
     tbin = time_all[1,0] - time_all[0,0]
     Time = [tbin, tmin, tmax]
+    
+    #print(tmin, tmax, tbin)
+
      
     return desiredtime, Time
     
@@ -918,6 +925,7 @@ def do_interpolation_hdf5(TargetShower, VoltageTraces, FilteredVoltageTraces, an
     desired = TargetShower.pos[160:,:] # TODO: replace with input positions # interpolated positions in meters [Number_antennas,3]
     PositionsPlane = TargetShower.pos[:Nant,:]
     desiredtime, Time  = ComputeTimeAntennas(TargetShower)
+   # print(desiredtime)
     
     EfieldTraces = []
     for i in range(160):
@@ -953,10 +961,11 @@ def do_interpolation_hdf5(TargetShower, VoltageTraces, FilteredVoltageTraces, an
     
     remove_antenna=[]
     desired_traceAll = []
+    discarded = []
     for i in np.arange(0,len(pos_des_angles)):
         
         #select the four antennas for the inerpolation for this desired antenna
-        Selected_I,Selected_II,Selected_III,Selected_IV = SelectAntennasForInterpolation(pos_sims_angles,pos_des_angles[i])
+        Selected_I,Selected_II,Selected_III,Selected_IV = SelectAntennasForInterpolation(pos_sims_angles,pos_des_angles[i], i, discarded)
 
         Skip=False
         for tracetype in usetracelist:
@@ -990,9 +999,12 @@ def do_interpolation_hdf5(TargetShower, VoltageTraces, FilteredVoltageTraces, an
     DesiredSlopeB=np.delete(DesiredSlopeB,remove_antenna)
     DesiredT0=np.delete(DesiredT0,remove_antenna)
     
-    
-    for i in range(len(desired_traceAll)):
-        np.savetxt("./OutputDirectory/DesiredTraces_%d.txt" %i, desired_traceAll[i])
-    
+    k =0
+    if(discarded == []): discarded.append(-1)    
+    for i in range(len(desired)):
+        if(i != discarded[k]):
+            np.savetxt("./OutputDirectory/DesiredTraces_%d.txt" %i, desired_traceAll[i -k])
+        else:
+            k = k +1
     return 
 
