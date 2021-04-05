@@ -26,6 +26,10 @@ def EnergyScale(RefShower, TargetShower):
     ref_energy = RefShower.energy
     target_energy = TargetShower.energy
     
+    if(TargetShower.fluctuations):
+        
+        ref_energy = np.random.normal(ref_energy, 0.1*ref_energy)
+    
     kE = target_energy/ref_energy
     
     scaled_traces = TargetShower.traces[:,Nant:]*kE
@@ -48,7 +52,9 @@ def GeomagneticScale(RefShower, TargetShower):
     ref_zenith = RefShower.zenith
     
     
-    LimitZenith = 100
+    LimitZenith = 80
+    
+    print(kgeo)
         
     if(ref_zenith>LimitZenith): # TODO: refine this condition, rather a condition over theta
     
@@ -111,7 +117,7 @@ def DensityScale(RefShower, TargetShower):
 # =============================================================================
 
 def CerenkovStretch(RefShower, TargetShower):
-        
+    
     cerangle_ref = RefShower.get_cerenkov_angle()
     cerangle_target = TargetShower.get_cerenkov_angle()
     

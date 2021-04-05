@@ -39,9 +39,9 @@ def process(sim_dir, shower,  out_dir):
 #                         Shower building
 # =============================================================================
                 
-        selected_plane = select_plane(**shower)
-        RefShower = extractData(selected_plane)
-        #RefShower = extractData(sim_dir[i])
+        #selected_plane = select_plane(**shower)
+        #RefShower = extractData(selected_plane)
+        RefShower = extractData(sim_dir[i])
         
         TargetShower = copy.deepcopy(RefShower) 
         TargetShower.primary = shower['primary']
@@ -49,6 +49,7 @@ def process(sim_dir, shower,  out_dir):
         TargetShower.zenith = shower['zenith']
         TargetShower.azimuth = shower['azimuth']
         TargetShower.injection = shower['injection']
+        TargetShower.fluctuations = shower['fluctuations']
         #TargetShower.glevel = shower['altitude']
         print_plane(RefShower, TargetShower)
         
@@ -57,6 +58,9 @@ def process(sim_dir, shower,  out_dir):
 # =============================================================================
         
         myscale(RefShower, TargetShower)
+        
+        print(TargetShower.xmaxpos)
+        
 
 # =============================================================================
 #                             LDF check
@@ -66,8 +70,8 @@ def process(sim_dir, shower,  out_dir):
         #SimulatedShower = extractData(sim_dir[i]) # TODO: include this in 
         #the test function # this is for a shower towards itself
         SimulatedShower = extractData(Simulated_path[i])
-        Scalingcheck(TargetShower, SimulatedShower)
-                
+        #Scalingcheck(TargetShower, SimulatedShower)
+                        
 # =============================================================================
 #                       Interpolation 3d tests
 # =============================================================================
@@ -83,16 +87,16 @@ def process(sim_dir, shower,  out_dir):
 #                           Interpolation      
 # =============================================================================
        
-        do_interpolation_hdf5(TargetShower, VoltageTraces = None, \
-        FilteredVoltageTraces = None, antennamin=0,antennamax=159, \
-        DISPLAY=False, usetrace="efield")  
+        #do_interpolation_hdf5(TargetShower, VoltageTraces = None, \
+        #FilteredVoltageTraces = None, antennamin=0,antennamax=159, \
+        #DISPLAY=False, usetrace="efield")  
     
    
 class Shower:
     
     def __init__(self, primary, energy, zenith, azimuth, injection_height, \
                  nantennas, inclination, GroundAltitude, Positions, \
-                 Traces, XmaxDistance, XmaxPosition):
+                 Traces, XmaxDistance, XmaxPosition, fluctuations):
     
         self.primary = primary
         self.energy = energy
@@ -106,6 +110,7 @@ class Shower:
         self.glevel = GroundAltitude
         self.xmaxdist = XmaxDistance
         self.xmaxpos = XmaxPosition
+        self.fluctuations = fluctuations
         self.distplane = self.get_distplane()
 
 # =============================================================================
@@ -352,11 +357,39 @@ class Shower:
         
         primary = self.primary
         energy= self.energy
+        fluctuations = self.fluctuations
         
         if(primary == 'Iron'):
-            a =65 
-            c =270
-            return a*np.log10(energy*1e6) +c
+            a =65.2
+            c =270.6
+            
+            Xmax = a*np.log10(energy*1e6) + c
+            
+            if(fluctuations):
+                a = 20.9
+                b = 3.67
+                c = 0.21
+                
+                sigma_xmax = a + b/energy**c
+                Xmax = np.random.normal(Xmax, sigma_xmax)
+            
+            return Xmax
+        
+        elif(primary == 'Proton'):
+            a = 57.4
+            c = 421.9
+            Xmax = a*np.log10(energy*1e6) + c
+            
+            if(fluctuations):
+                a = 66.5
+                b = 2.84
+                c = 0.48
+                
+                sigma_xmax = a + b/energy**c
+                Xmax = np.random.normal(Xmax, sigma_xmax)
+            
+            return Xmax
+        
         else:
             print("missing primary")  
             sys.exit()
@@ -710,10 +743,11 @@ def extractData(sim_file):
               
     Nant = len(X)
     Injection = 1e5 # TODO: get it from the hdf5
+    fluctuations = True
         
     
     RefShower = Shower(Primary, Energy, Zenith, Azimuth, Injection, Nant, BFieldIncl, GroundAltitude,
-                        Positions, Traces, XmaxDistance, XmaxPosition[0])
+                        Positions, Traces, XmaxDistance, XmaxPosition[0], fluctuations)
 
     return RefShower  
 

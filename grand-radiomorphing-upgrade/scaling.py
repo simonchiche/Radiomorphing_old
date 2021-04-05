@@ -17,7 +17,7 @@ def myscale(RefShower, TargetShower):
     
     # Translation in the shower plane
     TargetShower.pos, TargetShower.traces = RefShower.GetinShowerPlane()
-               
+    
     # Energy scaling
     TargetShower.traces[:,Nant:], kE = EnergyScale(RefShower, TargetShower)
     
@@ -26,14 +26,14 @@ def myscale(RefShower, TargetShower):
     
     # Density scaling
     TargetShower.traces[:,2*Nant:3*Nant], TargetShower.xmaxpos, krho = DensityScale(RefShower, TargetShower)    
-    
+        
     # Layout and traces stretching
     TargetShower.pos, TargetShower.traces[:,Nant:], kstretch = CerenkovStretch(RefShower, TargetShower)
-    
+
     # Back in the geographic plane
     TargetShower.pos, TargetShower.traces = TargetShower.GetinGeographicFrame()
         
     # TODO: include magnetic field scaling
-                        
+
     return TargetShower
         
