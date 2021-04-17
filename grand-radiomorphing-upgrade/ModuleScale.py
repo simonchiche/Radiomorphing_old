@@ -52,7 +52,7 @@ def GeomagneticScale(RefShower, TargetShower):
     ref_zenith = RefShower.zenith
     
     
-    LimitZenith = 80
+    LimitZenith = 180
     
     print(kgeo)
         
@@ -106,11 +106,30 @@ def DensityScale(RefShower, TargetShower):
     rho_ref = TargetShower._getAirDensity(XmaxHeight_ref, "linsley")
     rho_target = TargetShower._getAirDensity(XmaxHeight_target, "linsley")
         
-    krho =  1/np.sqrt(rho_ref/rho_target)
+    #krho =  1/np.sqrt(rho_ref/rho_target) # previous implementation
     
-    scaled_traces = TargetShower.traces[:,2*Nant:3*Nant]*krho
+    ############fit Egeo #####
+    
+    def fit_broken_law(rho_bins):
+
+        Phi0 = 1010
+        gamma1 = -1.0047
+        gamma2 = 0.2222
+        rho_break  = 3.5e-4
+        beta = 2.5
+        rho0 = 1.87e-6
+        y = (Phi0*(rho_bins/rho0)**(-gamma1))*(1+ (rho_bins/rho_break)**((gamma2- gamma1))/beta)**(-beta)
+    
+        return y
+    
+    b = 1.194878
+    krho_geo = (fit_broken_law(rho_target)/fit_broken_law(rho_ref))
+    krho_ce = (rho_target**b)/(rho_ref**b)
+    
+    scaled_traces_geo = TargetShower.traces[:,2*Nant:3*Nant]*krho_geo
+    scaled_traces_ce = TargetShower.traces[:,3*Nant:4*Nant]*krho_ce
             
-    return scaled_traces, xmax_target, krho
+    return scaled_traces_geo, scaled_traces_ce, xmax_target, krho_geo, krho_ce
     
 # =============================================================================
 #                       Cerenkov Stretch   

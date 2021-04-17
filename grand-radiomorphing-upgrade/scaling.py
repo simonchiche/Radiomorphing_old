@@ -25,7 +25,8 @@ def myscale(RefShower, TargetShower):
     TargetShower.traces[:,2*Nant:3*Nant], kgeo = GeomagneticScale(RefShower, TargetShower)
     
     # Density scaling
-    TargetShower.traces[:,2*Nant:3*Nant], TargetShower.xmaxpos, krho = DensityScale(RefShower, TargetShower)    
+    TargetShower.traces[:,2*Nant:3*Nant], TargetShower.traces[:,3*Nant:4*Nant],\
+    TargetShower.xmaxpos, krho_geo, krho_ce = DensityScale(RefShower, TargetShower)    
         
     # Layout and traces stretching
     TargetShower.pos, TargetShower.traces[:,Nant:], kstretch = CerenkovStretch(RefShower, TargetShower)

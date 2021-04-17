@@ -12,7 +12,7 @@ from scaling import myscale
 from interpolation import do_interpolation_hdf5
 import sys
 import copy
-from TestRadiomorphing import Scalingcheck
+from NewTestRadiomorphing import Scalingcheck
 import glob
 from select_plane import select_plane, print_plane
 
@@ -38,11 +38,11 @@ def process(sim_dir, shower,  out_dir):
 # =============================================================================
 #                         Shower building
 # =============================================================================
-                
-        #selected_plane = select_plane(**shower)
-        #RefShower = extractData(selected_plane)
-        RefShower = extractData(sim_dir[i])
-        
+        #print(shower["distplane"])
+
+        selected_plane = select_plane(**shower)
+        RefShower = extractData(selected_plane)
+        #RefShower = extractData(sim_dir[i]) # to chose the simulation manually
         TargetShower = copy.deepcopy(RefShower) 
         TargetShower.primary = shower['primary']
         TargetShower.energy = shower['energy']
@@ -50,7 +50,6 @@ def process(sim_dir, shower,  out_dir):
         TargetShower.azimuth = shower['azimuth']
         TargetShower.injection = shower['injection']
         TargetShower.fluctuations = shower['fluctuations']
-        #TargetShower.glevel = shower['altitude']
         print_plane(RefShower, TargetShower)
         
 # =============================================================================
@@ -58,19 +57,16 @@ def process(sim_dir, shower,  out_dir):
 # =============================================================================
         
         myscale(RefShower, TargetShower)
-        
-        print(TargetShower.xmaxpos)
-        
 
 # =============================================================================
 #                             LDF check
 # =============================================================================
-       
         Simulated_path = glob.glob("./TestShowers/*.hdf5")
         #SimulatedShower = extractData(sim_dir[i]) # TODO: include this in 
         #the test function # this is for a shower towards itself
         SimulatedShower = extractData(Simulated_path[i])
-        #Scalingcheck(TargetShower, SimulatedShower)
+        print(RefShower.distplane)
+        Scalingcheck(TargetShower, SimulatedShower, RefShower)
                         
 # =============================================================================
 #                       Interpolation 3d tests
